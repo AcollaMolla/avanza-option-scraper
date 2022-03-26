@@ -1,4 +1,4 @@
-import requests, logging
+import requests, logging, csv
 from bs4 import BeautifulSoup
 
 logging.basicConfig(level=logging.INFO)
@@ -7,10 +7,10 @@ _INSTRUMENT_ID = '9270'
 _END_DATES = ['2022-09', '2022-10', '2022-11', '2022-12', '2023-01', '2023-02', '2023-03', '2023-04', '2023-05', '2023-06']
 _OPTION_TYPE = 'PUT'
 
-list_of_option_ids = []
-list_of_options = []
+list_of_all_options = []
 
-BASE_URL = 'https://www.avanza.se/optioner-lista.html?name=&underlyingInstrumentId=' + _INSTRUMENT_ID + '&callIndicators=' + _OPTION_TYPE
+#BASE_URL = 'https://www.avanza.se/optioner-lista.html?name=&underlyingInstrumentId=' + _INSTRUMENT_ID + '&callIndicators=' + _OPTION_TYPE
+BASE_URL = 'https://www.avanza.se/optioner-lista.html?name=&underlyingInstrumentId='
 OPTION_DETAILS_BASE_URL = 'https://www.avanza.se/optioner/om-optionen.html/'
 
 class Greeks:
@@ -33,6 +33,18 @@ class Option:
 		self.url = url
 		self.strike_price = strike_price
 
+#Write all options to CSV
+def to_csv(options):
+	#Create a static csv header
+	header = ['oid', 'name', 'price', 'iv', 'iv_buy', 'iv_sell', 'delta', 'theta', 'vega', 'gamma', 'rho', 'url', 'strike_price']
+
+	with open('options.csv', 'w', encoding='UTF-8') as f:
+		writer = csv.writer(f)
+		writer.writerow(header)
+		for option in options:
+			#Create a list of option data
+			data = [option.oid, option.name, option.price, option.greeks.iv, option.greeks.iv_buy, option.greeks.iv_sell, option.greeks.delta, option.greeks.theta, option.greeks.vega, option.greeks.gamma, option.greeks.rho, option.url, option.strike_price]
+			writer.writerow(data)
 
 #Get a list of all underlying stocks
 def get_underlying_instrument_ids(soup):
@@ -52,10 +64,13 @@ def get_underlying_instrument_ids(soup):
 	return list_of_underlying
 
 #construct URL param list of all end dates. NOTE: Perhaps this is not necessary...It seems like a empty selectedEndDates list result in all end dates.
-def construct_url(url):
+def construct_url(url, underlying_id):
 	logging.info(f'Constructing end date parameters from list: {_END_DATES}')
 	end_date_param_name = '&selectedEndDates='
 	end_dates_param_list = ''
+
+	#Add current instrument ID to url
+	url = url + underlying_id + '&callIndicators=PUT'
 
 	#Loop through all end dates and add them to url
 	for end_date in _END_DATES:
@@ -195,15 +210,27 @@ def get_options(list_of_options):
 		logging.info(f'Progress: {counter}/{length}')
 	return list
 
-url = construct_url(BASE_URL)
+url = construct_url(BASE_URL, _INSTRUMENT_ID)
 soup = get_page(url)
 list_of_underlying = get_underlying_instrument_ids(soup)
-html_tbody = get_options_list(soup)
-list_of_options = get_list_of_option_ids(html_tbody)
-options = get_options(list_of_options)
 
-for option in options:
-	logging.info(f'Name: {option.name}\tPrice: {option.price}\tStrike price: {option.strike_price}\tGreeks:')
-	logging.info(f'\tIV: {option.greeks.iv}\tIV Buy: {option.greeks.iv_buy}\tIV Sell: {option.greeks.iv_sell}\tDelta: {option.greeks.delta}\tTheta: {option.greeks.theta}\tVega: {option.greeks.vega}\tGamma: {option.greeks.gamma}\tRho: {option.greeks.rho}')
+for underlying_id in list_of_underlying:
+	url = construct_url(BASE_URL, underlying_id)
+	soup = get_page(url)
+	html_tbody = get_options_list(soup)
+	list_of_options = get_list_of_option_ids(html_tbody)
+	options = get_options(list_of_options)
+
+	#Append list of options to a big list of all options
+	list_of_all_options.append(options)
+	break
+
+#Write all options to CSV
+for options in list_of_all_options:
+	to_csv(options)
+
+#for option in options:
+#	logging.info(f'Name: {option.name}\tPrice: {option.price}\tStrike price: {option.strike_price}\tGreeks:')
+#	logging.info(f'\tIV: {option.greeks.iv}\tIV Buy: {option.greeks.iv_buy}\tIV Sell: {option.greeks.iv_sell}\tDelta: {option.greeks.delta}\tTheta: {option.greeks.theta}\tVega: {option.greeks.vega}\tGamma: {option.greeks.gamma}\tRho: {option.greeks.rho}')
 
 #print(list_of_option_ids)
