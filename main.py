@@ -1,5 +1,6 @@
 import requests, logging, csv
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
 
@@ -38,7 +39,11 @@ def to_csv(options):
 	#Create a static csv header
 	header = ['oid', 'name', 'price', 'iv', 'iv_buy', 'iv_sell', 'delta', 'theta', 'vega', 'gamma', 'rho', 'url', 'strike_price']
 
-	with open('options.csv', 'w', encoding='UTF-8') as f:
+	#Generate filename
+	today = datetime.today().strftime('%Y-%m-%d')
+	filename = today + '.csv'
+
+	with open('data/' + filename, 'a', encoding='UTF-8') as f:
 		writer = csv.writer(f)
 		writer.writerow(header)
 		for option in options:
