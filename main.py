@@ -189,7 +189,7 @@ def get_option(option):
 		ul_elem = underlying_elem.find('ul', {"class": "cleanList"})
 		li_elem = ul_elem.find_all('li')[3]
 		span_elem = li_elem.find('span', {"class": "lastPrice"})
-		underlying_last_price = parse_option_price(span_elem.find('span').text)
+		underlying_last_price = parse_strike_price(span_elem.find('span').text)
 
 	except Exception as e:
 		logging.error(f'Could not parse underlying instrument last price: {e}')
