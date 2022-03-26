@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from os.path import exists
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 _INSTRUMENT_ID = '9270'
 _END_DATES = ['2022-09', '2022-10', '2022-11', '2022-12', '2023-01', '2023-02', '2023-03', '2023-04', '2023-05', '2023-06']
