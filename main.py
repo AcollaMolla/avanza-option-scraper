@@ -61,9 +61,9 @@ def to_csv(options, filepath):
 		for option in options:
 			#Create a list of option data
 			if option.greeks is not None:
-				data = [option.oid, option.name, option.price, option.greeks.iv, option.greeks.iv_buy, option.greeks.iv_sell, option.greeks.delta, option.greeks.theta, option.greeks.vega, option.greeks.gamma, option.greeks.rho, option.url, option.strike_price]
+				data = [option.oid, option.name, option.price, option.greeks.iv, option.greeks.iv_buy, option.greeks.iv_sell, option.greeks.delta, option.greeks.theta, option.greeks.vega, option.greeks.gamma, option.greeks.rho, option.url, option.strike_price, option.underlying_last_price]
 			else:
-				data = [option.oid, option.name, option.price, None, None, None, None, None, None, None, None, option.url, option.strike_price]
+				data = [option.oid, option.name, option.price, None, None, None, None, None, None, None, None, option.url, option.strike_price, option.underlying_last_price]
 			writer.writerow(data)
 
 #Get a list of all underlying stocks
