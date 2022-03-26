@@ -27,7 +27,7 @@ class Greeks:
 		self. rho = rho
 
 class Option:
-	def __init__(self, oid, name, price, greeks, url, strike_price, underlying_last_price):
+	def __init__(self, oid, name, price, greeks, url, strike_price, underlying_last_price, strike_date):
 		self.oid = oid
 		self.name = name.lower()
 		self.price = price
@@ -35,12 +35,13 @@ class Option:
 		self.url = url
 		self.strike_price = strike_price
 		self.underlying_last_price = underlying_last_price
+		self.strike_date = strike_date
 
 #Check if CSV exist or create it
 def create_csv():
 	today = datetime.today().strftime('%Y-%m-%d')
 	filename = today + '.csv'
-	header = ['oid', 'name', 'price', 'iv', 'iv_buy', 'iv_sell', 'delta', 'theta', 'vega', 'gamma', 'rho', 'url', 'strike_price', 'underlying_last_price']
+	header = ['oid', 'name', 'price', 'iv', 'iv_buy', 'iv_sell', 'delta', 'theta', 'vega', 'gamma', 'rho', 'url', 'strike_price', 'underlying_last_price', 'strike_date']
 
 	logging.info(f'Checking if CSV file {filename} exists...')
 
@@ -61,9 +62,9 @@ def to_csv(options, filepath):
 		for option in options:
 			#Create a list of option data
 			if option.greeks is not None:
-				data = [option.oid, option.name, option.price, option.greeks.iv, option.greeks.iv_buy, option.greeks.iv_sell, option.greeks.delta, option.greeks.theta, option.greeks.vega, option.greeks.gamma, option.greeks.rho, option.url, option.strike_price, option.underlying_last_price]
+				data = [option.oid, option.name, option.price, option.greeks.iv, option.greeks.iv_buy, option.greeks.iv_sell, option.greeks.delta, option.greeks.theta, option.greeks.vega, option.greeks.gamma, option.greeks.rho, option.url, option.strike_price, option.underlying_last_price, option.strike_date]
 			else:
-				data = [option.oid, option.name, option.price, None, None, None, None, None, None, None, None, option.url, option.strike_price, option.underlying_last_price]
+				data = [option.oid, option.name, option.price, None, None, None, None, None, None, None, None, option.url, option.strike_price, option.underlying_last_price, option.strike_date]
 			writer.writerow(data)
 
 #Get a list of all underlying stocks
@@ -129,7 +130,7 @@ def get_list_of_option_ids(html_tbody):
 		name = name_element.get('title')
 
 		#Create new Option object and add to list
-		option = Option(oid, name, None, None, None, None, None)
+		option = Option(oid, name, None, None, None, None, None, None)
 		list.append(option)
 
 		#Increase counter
@@ -197,14 +198,19 @@ def get_option(option):
 	#Find element containing option info
 	try:
 		info_element = soup.find_all('ul', {"class": "primaryInfo"})[1]
+		info_element2 = soup.find_all('ul', {"class": "primaryInfo"})[0]
 	except Exception as e:
 		logging.error(f'Could not find list of option primary info: {e}')
 
 	try:
 		info_element_spans = info_element.find_all('span', {"class": "data"})
+		info_element_spans2 = info_element2.find_all('span', {"class": "data"})
 
 		#Find strike price
 		strike_price = parse_strike_price(info_element_spans[1].text.replace('&nbsp;',''))
+
+		#Find strike date
+		strike_date = info_element_spans2[2].text
 
 	except Exception as e:
 		logging.error(f'Error when collecting option strike price: {e}')
@@ -253,10 +259,10 @@ def get_option(option):
 
 	#Return
 	try:
-		o = Option(option.oid, option.name, price, greeks, option_details_url, strike_price, underlying_last_price)
+		o = Option(option.oid, option.name, price, greeks, option_details_url, strike_price, underlying_last_price, strike_date)
 	except Exception as e:
 		logging.error(f'Could not create Option object. Will return Option with empty data: {e}')
-		o = Option(option.oid, option.name, None, None, option_details_url, None, None)
+		o = Option(option.oid, option.name, None, None, option_details_url, None, None, None)
 	return o
 
 def get_options(list_of_options):
