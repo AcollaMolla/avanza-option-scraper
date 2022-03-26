@@ -27,18 +27,20 @@ class Greeks:
 		self. rho = rho
 
 class Option:
-	def __init__(self, oid, name, price, greeks, url, strike_price):
+	def __init__(self, oid, name, price, greeks, url, strike_price, underlying_last_price):
 		self.oid = oid
 		self.name = name.lower()
 		self.price = price
 		self.greeks = greeks
 		self.url = url
 		self.strike_price = strike_price
+		self.underlying_last_price = underlying_last_price
+
 #Check if CSV exist or create it
 def create_csv():
 	today = datetime.today().strftime('%Y-%m-%d')
 	filename = today + '.csv'
-	header = ['oid', 'name', 'price', 'iv', 'iv_buy', 'iv_sell', 'delta', 'theta', 'vega', 'gamma', 'rho', 'url', 'strike_price']
+	header = ['oid', 'name', 'price', 'iv', 'iv_buy', 'iv_sell', 'delta', 'theta', 'vega', 'gamma', 'rho', 'url', 'strike_price', 'underlying_last_price']
 
 	logging.info(f'Checking if CSV file {filename} exists...')
 
@@ -127,7 +129,7 @@ def get_list_of_option_ids(html_tbody):
 		name = name_element.get('title')
 
 		#Create new Option object and add to list
-		option = Option(oid, name, None, None, None, None)
+		option = Option(oid, name, None, None, None, None, None)
 		list.append(option)
 
 		#Increase counter
@@ -178,6 +180,19 @@ def get_option(option):
 		price = parse_option_price(price_element.text)
 	except Exception as e:
 		logging.error(f'Error when collecting option price: {e}')
+
+	#find element containing underlying instrument data
+	underlying_elem = soup.find('div', {"class": "underlying_instrument"})
+	underlying_last_price = -1
+
+	try:
+		ul_elem = underlying_elem.find('ul', {"class": "cleanList"})
+		li_elem = ul_elem.find_all('li')
+		span_elem = li_elem.find('span', {"class": "lastPrice"})
+		underlying_last_price = span_elem.find('span').text
+
+	except Exception as e:
+		logging.error(f'Could not parse underlying instrument last price: {e}')
 
 	#Find element containing option info
 	try:
@@ -238,10 +253,10 @@ def get_option(option):
 
 	#Return
 	try:
-		o = Option(option.oid, option.name, price, greeks, option_details_url, strike_price)
+		o = Option(option.oid, option.name, price, greeks, option_details_url, strike_price, underlying_last_price)
 	except Exception as e:
 		logging.error(f'Could not create Option object. Will return Option with empty data: {e}')
-		o = Option(option.oid, option.name, None, None, option_details_url, None)
+		o = Option(option.oid, option.name, None, None, option_details_url, None, None)
 	return o
 
 def get_options(list_of_options):
