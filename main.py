@@ -174,7 +174,10 @@ def get_option(option):
 		logging.error(f'Error when collecting option price: {e}')
 
 	#Find element containing option info
-	info_element = soup.find_all('ul', {"class": "primaryInfo"})[1]
+	try:
+		info_element = soup.find_all('ul', {"class": "primaryInfo"})[1]
+	except Exception as e:
+		logging.error(f'Could not find list of option primary info: {e}')
 
 	try:
 		info_element_spans = info_element.find_all('span', {"class": "data"})
