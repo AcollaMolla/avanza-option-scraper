@@ -160,7 +160,7 @@ def parse_strike_price(sp):
 def get_option(option):
 	#Check if option name contians a '.' indicating decimal strike price. Then we need to replace with '-'
 	if '.' in option.name:
-		option.name.replace('.', '-')
+		option.name = option.name.replace('.', '-')
 
 	#Construct URL to Avanzas option detail page
 	option_details_url = OPTION_DETAILS_BASE_URL + option.oid + '/' + option.name
@@ -260,6 +260,8 @@ url = construct_url(BASE_URL, _INSTRUMENT_ID)
 soup = get_page(url)
 list_of_underlying = get_underlying_instrument_ids(soup)
 
+filepath = create_csv()
+
 for underlying_id in list_of_underlying:
 	logging.info(f'Collecting option info for underlying id {underlying_id}')
 	url = construct_url(BASE_URL, underlying_id)
@@ -268,15 +270,10 @@ for underlying_id in list_of_underlying:
 	list_of_options = get_list_of_option_ids(html_tbody)
 	options = get_options(list_of_options)
 
-	#Append list of options to a big list of all options
-	list_of_all_options.append(options)
-
-#Create new CSV
-filepath = create_csv()
-
-#Write all options to CSV
-for options in list_of_all_options:
+	#Write options to csv
 	to_csv(options, filepath)
+
+logging.info(f'Done!')
 
 #for option in options:
 #	logging.info(f'Name: {option.name}\tPrice: {option.price}\tStrike price: {option.strike_price}\tGreeks:')
