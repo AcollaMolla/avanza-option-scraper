@@ -231,7 +231,12 @@ def get_option(option):
 		logging.error(f'Error when parsing option greeks: {e}')
 
 	#Return
-	return Option(option.oid, option.name, price, greeks, option_details_url, strike_price)
+	try:
+		o = Option(option.oid, option.name, price, greeks, option_details_url, strike_price)
+	except Exception as e:
+		logging.error(f'Could not create Option object. Will return Option with empty data: {e}')
+		o = Option(option.oid, option.name, None, None, option_details_url, None)
+	return o
 
 def get_options(list_of_options):
 	logging.debug(f'Looping through list of option ids I found...This will take some time, please be patient!')
