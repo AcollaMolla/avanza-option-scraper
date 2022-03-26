@@ -2,6 +2,12 @@
 
 Avanza options scraper is a small Python project that scrapes Avanzas website for options data including price, strike price and greeks.
 
+### Background
+A while age I got interested in hedging my long stock portfolio agains market downs by buying PUT options. Since I'm using Avanza to buy long positions I would like to buy the options from avanza as well, having all instruments in the same ISK account.
+I've been browsing Avanzas option list almost daily to find suitable PUT options but it takes some time to do this. The filtering function is not very good (it only lets you filter on underlying instrument and strike date basically) and it is a lot of manual and tedious work associated with trying to find a fairly proced option. I would like to filter options on things like implicit volatility, delta, strike price, spread between underlying proce and strike price, etc.
+
+Therefore I decided to build this Python script that will automatically scrape Avanzas website for all PUT options that they offer! It will then save the result in a CSV file that I then can open in Microsoft Excel or awk in order to do some more advanced filtering.
+
 ## Installation
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
