@@ -40,10 +40,13 @@ def create_csv():
 	filename = today + '.csv'
 	header = ['oid', 'name', 'price', 'iv', 'iv_buy', 'iv_sell', 'delta', 'theta', 'vega', 'gamma', 'rho', 'url', 'strike_price']
 
+	logging.info(f'Checking if CSV file {filename} exists...')
+
 	if exists('data/' + filename):
 		return 'data/' + filename
 
 	else:
+		logging.warning(f'CSV file {filename} dont exist. Creating it...')
 		with open('data/' + filename, 'w', encoding='UTF-8') as f:
 			writer = csv.writer(f)
 			writer.writerow(header)
@@ -77,7 +80,7 @@ def get_underlying_instrument_ids(soup):
 
 #construct URL param list of all end dates. NOTE: Perhaps this is not necessary...It seems like a empty selectedEndDates list result in all end dates.
 def construct_url(url, underlying_id):
-	logging.info(f'Constructing end date parameters from list: {_END_DATES}')
+	logging.debug(f'Constructing end date parameters from list: {_END_DATES}')
 	end_date_param_name = '&selectedEndDates='
 	end_dates_param_list = ''
 
@@ -89,7 +92,7 @@ def construct_url(url, underlying_id):
 		end_dates_param_list = end_dates_param_list + end_date_param_name + end_date
 
 	#Return
-	logging.info(f'End date params list: {end_dates_param_list}')
+	logging.debug(f'End date params list: {end_dates_param_list}')
 	return url + end_dates_param_list + '&sortField=NAME&sortOrder=ASCENDING&activeTab=overview'
 
 def get_page(URL):
@@ -100,17 +103,17 @@ def get_page(URL):
 		logging.error(f'Encountered an issue when requesting page {URL}')
 		logging.error(f'Stack trace: {e}')
 
-	logging.info(f'Received page! Proceeding to parse HTML...')
+	logging.debug(f'Received page! Proceeding to parse HTML...')
 	return BeautifulSoup(page.content, 'html.parser')
 
 def get_options_list(soup):
-	logging.info(f'Finding div containing list of options...')
+	logging.debug(f'Finding div containing list of options...')
 	content_table = soup.find(id='contentTable')
-	logging.info(f'Finding tbody containing list of options...')
+	logging.debug(f'Finding tbody containing list of options...')
 	return content_table.find('tbody')
 
 def get_list_of_option_ids(html_tbody):
-	logging.info(f'Extracting option IDs from tbody...')
+	logging.debug(f'Extracting option IDs from tbody...')
 	list = []
 	counter = 0
 
@@ -211,7 +214,7 @@ def get_option(option):
 	return Option(option.oid, option.name, price, greeks, option_details_url, strike_price)
 
 def get_options(list_of_options):
-	logging.info(f'Looping through list of option ids I found...This will take some time, please be patient!')
+	logging.debug(f'Looping through list of option ids I found...This will take some time, please be patient!')
 	length = len(list_of_options)
 	counter = 0
 	list = []
@@ -219,7 +222,7 @@ def get_options(list_of_options):
 	for option in list_of_options:
 		list.append(get_option(option))
 		counter = counter + 1
-		logging.info(f'Progress: {counter}/{length}')
+		logging.debug(f'Progress: {counter}/{length}')
 	return list
 
 url = construct_url(BASE_URL, _INSTRUMENT_ID)
@@ -227,6 +230,7 @@ soup = get_page(url)
 list_of_underlying = get_underlying_instrument_ids(soup)
 
 for underlying_id in list_of_underlying:
+	logging.info(f'Collecting option info for underlying id {underlying_id}')
 	url = construct_url(BASE_URL, underlying_id)
 	soup = get_page(url)
 	html_tbody = get_options_list(soup)
@@ -235,7 +239,6 @@ for underlying_id in list_of_underlying:
 
 	#Append list of options to a big list of all options
 	list_of_all_options.append(options)
-	break
 
 #Create new CSV
 filepath = create_csv()
