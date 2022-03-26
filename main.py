@@ -34,6 +34,23 @@ class Option:
 		self.strike_price = strike_price
 
 
+#Get a list of all underlying stocks
+def get_underlying_instrument_ids(soup):
+	logging.info(f'Scraping page for all available underlying stocks...')
+	list_of_underlying = []
+
+	#Find HTML elements containing underlyings
+	underlying_elem = soup.find(id='underlyingInstrumentId')
+	option_elems = underlying_elem.find_all('option')
+
+	#Loop through the elems and get IDs
+	for option_elem in option_elems:
+		list_of_underlying.append(option_elem.get('value'))
+
+	#Return
+	logging.info(f'Found {len(list_of_underlying)} underlyings!')
+	return list_of_underlying
+
 #construct URL param list of all end dates. NOTE: Perhaps this is not necessary...It seems like a empty selectedEndDates list result in all end dates.
 def construct_url(url):
 	logging.info(f'Constructing end date parameters from list: {_END_DATES}')
@@ -180,6 +197,7 @@ def get_options(list_of_options):
 
 url = construct_url(BASE_URL)
 soup = get_page(url)
+list_of_underlying = get_underlying_instrument_ids(soup)
 html_tbody = get_options_list(soup)
 list_of_options = get_list_of_option_ids(html_tbody)
 options = get_options(list_of_options)
