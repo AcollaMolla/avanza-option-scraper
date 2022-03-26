@@ -160,6 +160,14 @@ def parse_strike_price(sp):
 	except Exception as e:
 		logging.error(f'Exception when parsing strike price of option: {e}')
 
+def parse_underlying_price(p):
+	try:
+		q = re.sub('[^0-9,]', '', p)
+		q = q.replace(',', '.')
+		return float(q)
+	except Exception as e:
+		logging.error(f'Exception when parsing underlying pricer: {e}')
+
 def get_option(option):
 	#Check if option name contians a '.' indicating decimal strike price. Then we need to replace with '-'
 	if '.' in option.name:
