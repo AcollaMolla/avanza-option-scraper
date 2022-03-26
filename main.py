@@ -187,7 +187,7 @@ def get_option(option):
 
 	try:
 		ul_elem = underlying_elem.find('ul', {"class": "cleanList"})
-		li_elem = ul_elem.find_all('li')
+		li_elem = ul_elem.find_all('li')[3]
 		span_elem = li_elem.find('span', {"class": "lastPrice"})
 		underlying_last_price = span_elem.find('span').text
 
