@@ -29,8 +29,9 @@ The script will proceed by looping through each option available for the underly
 ## Issues
 - The script only scrapes for PUT options. I will add CALL option scraping soon!
 - Sometimes BeautifulSoup fails to collect HTML elements contianing option data from the options details page. I can't reproduce the error but it appears sometimes on different underlyings and on different options. I have added many try/except statements in the code so that the script don't fail on these steps but this is only a temporary solution. I will add functionality for retrying failed pages in the future.
-- It takes time to connect to each options Avanza page and scrape the content. With ~60 underlying instruments and ~50 options for each, a scrape of all options offered on Avanza takes an hour or two. I don't think I can improve this...
+- It takes time to connect to each options Avanza page and scrape the content. With ~60 underlying instruments and ~50 options for each, a scrape of all options offered on Avanza takes an hour or two. I don't think I can improve this since it takes some time to connect to Avanza and download the HTML page content.
 - The script will collect data for ALL ~3000 options BEFORE it writes them all to a CSV file in bulk. Therefore, if there is an exception or crash during the scraping process all work will be lost. I will implement functionality soon for continously writing option data to CSV.
+- I don't know if Avanza can blacklist my IP address because of too many web request in too short time. If this is the case, I may have to add a sleep method of a few seconds between each request.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
