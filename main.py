@@ -155,10 +155,11 @@ def parse_strike_price(sp):
 		logging.error(f'Exception when parsing strike price of option: {e}')
 
 def get_option(option):
-	logging.debug(f'Collecting data for option: {option.url}')
-	
-#Construct URL to Avanzas option detail page
+
+	#Construct URL to Avanzas option detail page
 	option_details_url = OPTION_DETAILS_BASE_URL + option.oid + '/' + option.name
+
+	logging.debug(f'Scraping data for option: {option_details_url}')
 
 	#Request page and turn into BeautifulSoup object
 	page = requests.get(option_details_url, allow_redirects=True)
