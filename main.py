@@ -158,6 +158,9 @@ def parse_strike_price(sp):
 		logging.error(f'Exception when parsing strike price of option: {e}')
 
 def get_option(option):
+	#Check if option name contians a '.' indicating decimal strike price. Then we need to replace with '-'
+	if '.' in option.name:
+		option.name.replace('.', '-')
 
 	#Construct URL to Avanzas option detail page
 	option_details_url = OPTION_DETAILS_BASE_URL + option.oid + '/' + option.name
