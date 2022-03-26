@@ -1,6 +1,7 @@
 import requests, logging, csv
 from bs4 import BeautifulSoup
 from datetime import datetime
+from os.path import exists
 
 logging.basicConfig(level=logging.INFO)
 
@@ -33,19 +34,25 @@ class Option:
 		self.greeks = greeks
 		self.url = url
 		self.strike_price = strike_price
-
-#Write all options to CSV
-def to_csv(options):
-	#Create a static csv header
-	header = ['oid', 'name', 'price', 'iv', 'iv_buy', 'iv_sell', 'delta', 'theta', 'vega', 'gamma', 'rho', 'url', 'strike_price']
-
-	#Generate filename
+#Check if CSV exist or create it
+def create_csv():
 	today = datetime.today().strftime('%Y-%m-%d')
 	filename = today + '.csv'
+	header = ['oid', 'name', 'price', 'iv', 'iv_buy', 'iv_sell', 'delta', 'theta', 'vega', 'gamma', 'rho', 'url', 'strike_price']
 
-	with open('data/' + filename, 'a', encoding='UTF-8') as f:
+	if exists('data/' + filename):
+		return 'data/' + filename
+
+	else:
+		with open('data/' + filename, 'w', encoding='UTF-8') as f:
+			writer = csv.writer(f)
+			writer.writerow(header)
+		return 'data/' + filename
+
+#Write all options to CSV
+def to_csv(options, filepath):
+	with open(filepath, 'a', encoding='UTF-8') as f:
 		writer = csv.writer(f)
-		writer.writerow(header)
 		for option in options:
 			#Create a list of option data
 			data = [option.oid, option.name, option.price, option.greeks.iv, option.greeks.iv_buy, option.greeks.iv_sell, option.greeks.delta, option.greeks.theta, option.greeks.vega, option.greeks.gamma, option.greeks.rho, option.url, option.strike_price]
@@ -230,9 +237,12 @@ for underlying_id in list_of_underlying:
 	list_of_all_options.append(options)
 	break
 
+#Create new CSV
+filepath = create_csv()
+
 #Write all options to CSV
 for options in list_of_all_options:
-	to_csv(options)
+	to_csv(options, filepath)
 
 #for option in options:
 #	logging.info(f'Name: {option.name}\tPrice: {option.price}\tStrike price: {option.strike_price}\tGreeks:')
