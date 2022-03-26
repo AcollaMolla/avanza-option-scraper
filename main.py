@@ -4,13 +4,13 @@ from bs4 import BeautifulSoup
 logging.basicConfig(level=logging.INFO)
 
 _INSTRUMENT_ID = '9270'
-_END_DATE = '2022-09'
+_END_DATES = ['2022-09', '2022-10', '2022-11', '2022-12', '2023-01', '2023-02', '2023-03', '2023-04', '2023-05', '2023-06']
 _OPTION_TYPE = 'PUT'
 
 list_of_option_ids = []
 list_of_options = []
 
-URL = 'https://www.avanza.se/optioner-lista.html?name=&underlyingInstrumentId=' + _INSTRUMENT_ID + '&callIndicators=' + _OPTION_TYPE + '&selectedEndDates=' + _END_DATE + '&sortField=NAME&sortOrder=ASCENDING&activeTab=overview'
+BASE_URL = 'https://www.avanza.se/optioner-lista.html?name=&underlyingInstrumentId=' + _INSTRUMENT_ID + '&callIndicators=' + _OPTION_TYPE
 OPTION_DETAILS_BASE_URL = 'https://www.avanza.se/optioner/om-optionen.html/'
 
 class Greeks:
@@ -33,6 +33,20 @@ class Option:
 		self.url = url
 		self.strike_price = strike_price
 
+
+#construct URL param list of all end dates. NOTE: Perhaps this is not necessary...It seems like a empty selectedEndDates list result in all end dates.
+def construct_url(url):
+	logging.info(f'Constructing end date parameters from list: {_END_DATES}')
+	end_date_param_name = '&selectedEndDates='
+	end_dates_param_list = ''
+
+	#Loop through all end dates and add them to url
+	for end_date in _END_DATES:
+		end_dates_param_list = end_dates_param_list + end_date_param_name + end_date
+
+	#Return
+	logging.info(f'End date params list: {end_dates_param_list}')
+	return url + end_dates_param_list + '&sortField=NAME&sortOrder=ASCENDING&activeTab=overview'
 
 def get_page(URL):
 	logging.info(f'Requesting page {URL}')
@@ -164,7 +178,8 @@ def get_options(list_of_options):
 		logging.info(f'Progress: {counter}/{length}')
 	return list
 
-soup = get_page(URL)
+url = construct_url(BASE_URL)
+soup = get_page(url)
 html_tbody = get_options_list(soup)
 list_of_options = get_list_of_option_ids(html_tbody)
 options = get_options(list_of_options)
