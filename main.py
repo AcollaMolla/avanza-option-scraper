@@ -155,7 +155,9 @@ def parse_strike_price(sp):
 		logging.error(f'Exception when parsing strike price of option: {e}')
 
 def get_option(option):
-	#Construct URL to Avanzas option detail page
+	logging.debug(f'Collecting data for option: {option.url}')
+	
+#Construct URL to Avanzas option detail page
 	option_details_url = OPTION_DETAILS_BASE_URL + option.oid + '/' + option.name
 
 	#Request page and turn into BeautifulSoup object
@@ -164,51 +166,65 @@ def get_option(option):
 
 	#Find span containing sell price
 	price_element = soup.find('span', {"class": "sellPrice"})
-	price = parse_option_price(price_element.text)
+
+	try:
+		price = parse_option_price(price_element.text)
+	except Exception as e:
+		logging.error(f'Error when collecting option price: {e}')
 
 	#Find element containing option info
 	info_element = soup.find_all('ul', {"class": "primaryInfo"})[1]
-	info_element_spans = info_element.find_all('span', {"class": "data"})
+
+	try:
+		info_element_spans = info_element.find_all('span', {"class": "data"})
+
+		#Find strike price
+		strike_price = parse_strike_price(info_element_spans[1].text.replace('&nbsp;',''))
+
+	except Exception as e:
+		logging.error(f'Error when collecting option strike price: {e}')
 
 	#Find element contianing greeks
 	greeks_element = soup.find('div', {"class": "derivative_greeks_data"})
-	dl_element = greeks_element.find('dl')
-	all_greeks_element = dl_element.find_all('dd')
 
-	#Find strike price
-	strike_price = parse_strike_price(info_element_spans[1].text.replace('&nbsp;',''))
+	try:
+		dl_element = greeks_element.find('dl')
+		all_greeks_element = dl_element.find_all('dd')
 
-	#Find IV
-        #span = all_greeks_element[0].find('span').text
-	iv = None#parse_option_iv(span)
+		#Find IV
+        	#span = all_greeks_element[0].find('span').text
+		iv = None
 
-	#Find IV buy
-	span = all_greeks_element[0].find('span').text
-	iv_buy = parse_option_iv(span)
+		#Find IV buy
+		span = all_greeks_element[0].find('span').text
+		iv_buy = parse_option_iv(span)
 
-	#Find IV sell
-	iv_sell = None
+		#Find IV sell
+		iv_sell = None
 
-	#Find delta
-	span = all_greeks_element[2].find('span').text
-	delta = parse_option_price(span)
+		#Find delta
+		span = all_greeks_element[2].find('span').text
+		delta = parse_option_price(span)
 
-	#Find theta
-	span = all_greeks_element[3].find('span').text
-	theta = parse_option_iv(span)
+		#Find theta
+		span = all_greeks_element[3].find('span').text
+		theta = parse_option_iv(span)
 
-	#Find vega
-	span = all_greeks_element[4].find('span').text
-	vega = parse_option_iv(span)
+		#Find vega
+		span = all_greeks_element[4].find('span').text
+		vega = parse_option_iv(span)
 
-	#Find gamma
-	gamma = None
+		#Find gamma
+		gamma = None
 
-	#Find rho
-	rho = None
+		#Find rho
+		rho = None
 
-	#Create a new Greeks object
-	greeks = Greeks(iv, iv_buy, iv_sell, delta, theta, vega, gamma, rho)
+		#Create a new Greeks object
+		greeks = Greeks(iv, iv_buy, iv_sell, delta, theta, vega, gamma, rho)
+
+	except Exception as e:
+		logging.error(f'Error when parsing option greeks: {e}')
 
 	#Return
 	return Option(option.oid, option.name, price, greeks, option_details_url, strike_price)
