@@ -35,13 +35,15 @@ class Option:
 		self.url = url
 		self.strike_price = strike_price
 		self.underlying_last_price = underlying_last_price
-		self.strike_date = strike_date
+
+	def get_scrape_date(self):
+		return datetime.today().strftime('%Y-%m-%d')
 
 #Check if CSV exist or create it
 def create_csv():
 	today = datetime.today().strftime('%Y-%m-%d')
 	filename = today + '.csv'
-	header = ['oid', 'name', 'price', 'iv', 'iv_buy', 'iv_sell', 'delta', 'theta', 'vega', 'gamma', 'rho', 'url', 'strike_price', 'underlying_last_price', 'strike_date']
+	header = ['oid', 'name', 'price', 'iv', 'iv_buy', 'iv_sell', 'delta', 'theta', 'vega', 'gamma', 'rho', 'url', 'strike_price', 'underlying_last_price', 'strike_date', 'scrape_date']
 
 	logging.info(f'Checking if CSV file {filename} exists...')
 
@@ -62,9 +64,9 @@ def to_csv(options, filepath):
 		for option in options:
 			#Create a list of option data
 			if option.greeks is not None:
-				data = [option.oid, option.name, option.price, option.greeks.iv, option.greeks.iv_buy, option.greeks.iv_sell, option.greeks.delta, option.greeks.theta, option.greeks.vega, option.greeks.gamma, option.greeks.rho, option.url, option.strike_price, option.underlying_last_price, option.strike_date]
+				data = [option.oid, option.name, option.price, option.greeks.iv, option.greeks.iv_buy, option.greeks.iv_sell, option.greeks.delta, option.greeks.theta, option.greeks.vega, option.greeks.gamma, option.greeks.rho, option.url, option.strike_price, option.underlying_last_price, option.strike_date, option.get_scrape_date]
 			else:
-				data = [option.oid, option.name, option.price, None, None, None, None, None, None, None, None, option.url, option.strike_price, option.underlying_last_price, option.strike_date]
+				data = [option.oid, option.name, option.price, None, None, None, None, None, None, None, None, option.url, option.strike_price, option.underlying_last_price, option.strike_date, option.get_scrape_date]
 			writer.writerow(data)
 
 #Get a list of all underlying stocks
