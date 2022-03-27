@@ -171,6 +171,9 @@ def parse_underlying_price(p):
 		logging.error(f'Exception when parsing underlying pricer: {e}')
 
 def get_option(option):
+
+	logging.debug(f'Scraping data for option: {option.name}')
+
 	#Check if option name contians a '.' indicating decimal strike price. Then we need to replace with '-'
 	if '.' in option.name:
 		option.name = option.name.replace('.', '-')
@@ -198,10 +201,18 @@ def get_option(option):
 
 	try:
 		ul_elem = underlying_elem.find('ul', {"class": "cleanList"})
-		if 'omxs' or 'omxesg' in option.name:
+
+		if 'omxs' in option.name:
+			logging.debug(f'Options underlying is OMX index named {option.name}. Applying special scraping rules...')
 			li_elem = ul_elem.find_all('li')[1]
-		else: 
+
+		elif 'omxesg' in option.name:
+			logging.debug(f'Options underlying is OMXESG index named {option.name}. Applying special scraping rules...')
+			li_elem = ul_elem.find_all('li')[1]
+
+		else:
 			li_elem = ul_elem.find_all('li')[3]
+
 		span_elem = li_elem.find('span', {"class": "lastPrice"})
 		underlying_last_price = parse_underlying_price(span_elem.find('span').text)
 
