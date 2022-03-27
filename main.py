@@ -196,7 +196,7 @@ def get_option(option):
 
 	try:
 		ul_elem = underlying_elem.find('ul', {"class": "cleanList"})
-		if 'omxs' in option.name:
+		if 'omxs' or 'omxesg' in option.name:
 			li_elem = ul_elem.find_all('li')[1]
 		else: 
 			li_elem = ul_elem.find_all('li')[3]
