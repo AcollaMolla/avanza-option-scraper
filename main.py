@@ -215,7 +215,7 @@ def get_option(option):
 		info_element_spans2 = info_element2.find_all('span', {"class": "data"})
 
 		#Find strike price
-		strike_price = parse_strike_price(info_element_spans[1].text.replace('&nbsp;',''))
+		strike_price = parse_underlying_price(info_element_spans[1].text.replace('&nbsp;',''))
 
 		#Find strike date
 		strike_date = info_element_spans2[2].text
