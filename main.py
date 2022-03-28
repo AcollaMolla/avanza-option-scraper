@@ -35,6 +35,7 @@ class Option:
 		self.url = url
 		self.strike_price = strike_price
 		self.underlying_last_price = underlying_last_price
+		self.strike_date = strike_date
 
 	def get_scrape_date(self):
 		return datetime.today().strftime('%Y-%m-%d')
