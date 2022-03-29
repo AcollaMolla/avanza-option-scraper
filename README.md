@@ -54,6 +54,15 @@ The script will proceed by looping through each option available for the underly
 - The script will collect data for ALL ~3000 options BEFORE it writes them all to a CSV file in bulk. Therefore, if there is an exception or crash during the scraping process all work will be lost. I will implement functionality soon for continously writing option data to CSV.
 - I don't know if Avanza can blacklist my IP address because of too many web request in too short time. If this is the case, I may have to add a sleep method of a few seconds between each request.
 
+## Troubleshooting
+Common error messages and issues and how I solved them.
+
+### Cron not running script properly
+If main.py runs fine when launched from the command line but not when launched from cron this may indicate an issue with directory paths or ENV variables used in main.py. Read the cron.log file in avanza-data-scraper/ for more info:
+```
+cat /home/<USERNAME>/avanza-data-scraper/cron.log
+```
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
