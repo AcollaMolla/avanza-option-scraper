@@ -22,6 +22,27 @@ python3 -m pip install beautifulsoup4
 python3 main.py
 ```
 
+### Installing crontab
+Install a crontab that runs this script automatically at 10:00 each day.
+First step is to determine the absolute path of Python3:
+
+```
+which python3
+```
+Note down the output and open crontab:
+
+```
+crontab -e
+```
+
+Add the following line:
+```
+0 10 * * * /usr/bin/python3 /home/<USERNAME>/avanza-data-scraper/main.py >> /home/<USERNAME>/avanza-data-scraper/cron.log 2>&1
+```
+
+Exit crontab in order to save and install this new rule.
+
+
 ## How it works
 The Python script will begin by visiting Avanzas page that lists all available options and for what underlying instruments options are available. The script will parse the list of underlying instruments (currently these are stocks listed on OMX Stockholm Large Cap, as well as the OMXS30 index) and then collect all availbale options for each underlying instrument.
 The script will proceed by looping through each option available for the underlying instrument and scrape option info data (price, strike price, greeks and more) from the options details page on Avanza.

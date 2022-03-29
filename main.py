@@ -1,4 +1,6 @@
-import requests, logging, csv, re
+#!/usr/bin/python3
+
+import requests, logging, csv, re, pathlib
 from bs4 import BeautifulSoup
 from datetime import datetime
 from os.path import exists
@@ -38,36 +40,39 @@ class Option:
 		self.strike_date = strike_date
 
 	def get_scrape_date(self):
-		return datetime.today().strftime('%Y-%m-%d')
+		return str(datetime.today().strftime('%Y-%m-%d'))
 
 #Check if CSV exist or create it
 def create_csv():
 	today = datetime.today().strftime('%Y-%m-%d')
 	filename = today + '.csv'
 	header = ['oid', 'name', 'price', 'iv', 'iv_buy', 'iv_sell', 'delta', 'theta', 'vega', 'gamma', 'rho', 'url', 'strike_price', 'underlying_last_price', 'strike_date', 'scrape_date']
+	abs_path = str(pathlib.Path(__file__).parent.resolve())
 
 	logging.info(f'Checking if CSV file {filename} exists...')
+	logging.debug(f'Absolute path of Python script: {abs_path}')
 
-	if exists('data/' + filename):
-		return 'data/' + filename
+	if exists(abs_path + '/data/' + filename):
+		return abs_path + '/data/' + filename
 
 	else:
 		logging.warning(f'CSV file {filename} dont exist. Creating it...')
-		with open('data/' + filename, 'w', encoding='UTF-8') as f:
+		with open(abs_path + '/data/' + filename, 'w', encoding='UTF-8') as f:
 			writer = csv.writer(f)
 			writer.writerow(header)
-		return 'data/' + filename
+		return abs_path + '/data/' + filename
 
 #Write all options to CSV
 def to_csv(options, filepath):
+	scrape_date = datetime.today().strftime('%Y-%m-%d')
 	with open(filepath, 'a', encoding='UTF-8') as f:
 		writer = csv.writer(f)
 		for option in options:
 			#Create a list of option data
 			if option.greeks is not None:
-				data = [option.oid, option.name, option.price, option.greeks.iv, option.greeks.iv_buy, option.greeks.iv_sell, option.greeks.delta, option.greeks.theta, option.greeks.vega, option.greeks.gamma, option.greeks.rho, option.url, option.strike_price, option.underlying_last_price, option.strike_date, option.get_scrape_date]
+				data = [option.oid, option.name, option.price, option.greeks.iv, option.greeks.iv_buy, option.greeks.iv_sell, option.greeks.delta, option.greeks.theta, option.greeks.vega, option.greeks.gamma, option.greeks.rho, option.url, option.strike_price, option.underlying_last_price, option.strike_date, scrape_date]
 			else:
-				data = [option.oid, option.name, option.price, None, None, None, None, None, None, None, None, option.url, option.strike_price, option.underlying_last_price, option.strike_date, option.get_scrape_date]
+				data = [option.oid, option.name, option.price, None, None, None, None, None, None, None, None, option.url, option.strike_price, option.underlying_last_price, option.strike_date, scrape_date]
 			writer.writerow(data)
 
 #Get a list of all underlying stocks
@@ -153,6 +158,7 @@ def parse_option_iv(iv):
 	if iv == '-':
 		return None
 	else:
+		iv = parse_underlying_price(iv)
 		return iv
 
 def parse_strike_price(sp):
